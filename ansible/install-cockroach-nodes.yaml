@@ -1,0 +1,11 @@
+---
+
+- name: Configure the nodes and install cockroach
+  hosts: all
+  user: ubuntu
+  gather_facts: yes
+  become: yes
+  roles:
+    - configure-cockroach
+    - install-cockroach
+    - configure-certificates

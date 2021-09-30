@@ -1,0 +1,10 @@
+---
+
+- name: Install cockroach
+  hosts: all
+  gather_facts: yes
+  become: yes
+  user: ubuntu
+
+  roles:
+    - install-cockroach

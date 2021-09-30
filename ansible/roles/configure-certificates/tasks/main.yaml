@@ -1,0 +1,45 @@
+---
+- name: Create cert for each host
+  local_action: command cockroach cert create-node --overwrite "{{ ec2_ip }}" localhost 127.0.0.1 "{{ elb_dns_name }}" --certs-dir=certs --ca-key=my-safe-directory/ca.key
+
+- name: change permissions to keys
+  file:
+    path: "certs/{{ item }}"
+    mode: 0644
+  delegate_to: localhost
+  with_items:
+    - ca.crt
+    - node.crt
+    - node.key 
+
+
+#######################---Remote action---############################
+#
+- name: Create directory for certs in node
+  file:
+    path: certs
+    state: directory
+
+- name: Copy certs and key to the node
+  copy:
+    src: "certs/{{ item }}"
+    dest: certs
+  with_items:
+    - "ca.crt"
+    - "node.crt"
+    - "node.key"
+- name: set the node key permission
+  file:
+    path: certs/node.key
+    mode: 0600
+
+##############################---Create client certificate to contact nodes---##############
+#
+- name: change the key permission restrictive
+  file:
+    path: certs/node.key
+    mode: 0600
+  delegate_to: localhost
+
+- name: Start cockroach on the node
+  command: cockroach start --certs-dir=certs --advertise-addr="{{ ec2_ip }}" --join="{{ ec2_instances }}" --cache=.25 --max-sql-memory=.25 --background

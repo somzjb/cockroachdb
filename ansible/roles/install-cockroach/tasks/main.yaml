@@ -1,0 +1,28 @@
+---
+- name: Unarchive cockroach binaries
+  unarchive:
+    src: https://binaries.cockroachdb.com/cockroach-v{{ cockroach_version }}.linux-amd64.tgz
+    dest: /tmp
+    remote_src: yes
+  register: out
+
+- debug: var=out
+
+- name: Copy the binaries to /usr/local/bin
+  copy:
+    src: "{{ out['dest'] }}/cockroach-v{{  cockroach_version }}.linux-amd64/"
+    dest: /usr/local/bin
+    remote_src: yes
+
+- name: Create directory where libraries are stored
+  file:
+    path: /usr/local/lib/cockroach
+    state: directory
+- name: Copy libraries to the directory
+  copy:
+    src: "{{ out['dest'] }}/cockroach-v{{  cockroach_version }}.linux-amd64/lib/{{ item }}"
+    dest: /usr/local/lib/cockroach
+    remote_src: yes
+  with_items:
+    - "libgeos.so"
+    - "libgeos_c.so"

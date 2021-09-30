@@ -1,0 +1,19 @@
+- name: update cache
+  apt:
+    update_cache: yes
+- name: install chrony
+  apt:
+    name: chrony
+- name: comment ou all the pool or server entries
+  replace:
+    path: /etc/chrony/chrony.conf
+    regexp: '^(server|pool).*'
+    replace: '# \1'
+
+- name: configure clock synchronization
+  lineinfile:
+    path: /etc/chrony/chrony.conf
+    line: server 169.254.169.123 prefer iburst minpoll 4 maxpoll 4
+    
+- name: Restart chrony
+  shell: sudo /etc/init.d/chrony restart
